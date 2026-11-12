@@ -1,0 +1,53 @@
+{
+  "run": {
+    "sim_time_s": 360.0,
+    "duration_s": 360,
+    "finished": true,
+    "seed": 42,
+    "preset": "a1"
+  },
+  "orders": {
+    "released": 0,
+    "completed": 0,
+    "shipped": 0,
+    "late": 0,
+    "on_time_rate": null,
+    "completed_per_min": 0.0,
+    "avg_time_s": null,
+    "median_time_s": null,
+    "p90_time_s": null,
+    "avg_queue_delay_s": null,
+    "waiting_now": 0,
+    "open_now": 0
+  },
+  "blocks": {
+    "spawned": 0,
+    "picked": 0,
+    "delivered_in_orders": 0,
+    "extra_in_totes": 0,
+    "dropped": 0,
+    "rejected": 0,
+    "picked_per_min": 0.0,
+    "avg_pick_wait_s": null,
+    "efficiency": null
+  },
+  "robots": [
+    {
+      "robot": "MIR100_1",
+      "distance_m": 36.0,
+      "moving_pct": 25.5,
+      "battery_end": 33.1,
+      "battery_min": 33.1,
+      "dead_time_s": 0.0,
+      "rescues": 0,
+      "charge_sessions": 0,
+      "charge_time_s": 0.0,
+      "docks": 0,
+      "docks_per_station": {},
+      "dock_mean_pos_err_m": null,
+      "dock_mean_yaw_err_rad": null,
+      "localization": null
+    }
+  ],
+  "order_list": []
+}
