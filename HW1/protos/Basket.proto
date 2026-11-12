@@ -1,0 +1,71 @@
+#VRML_SIM R2025a utf8
+# template language: javascript
+# Open-top industrial basket on a low stand. Origin is on the floor, at the center of the footprint.
+#   size.x / size.y : outer footprint, size.z : wall height above the basket floor plate
+#   standHeight     : height of the stand under the basket floor plate
+
+PROTO Basket [
+  field SFVec3f    translation 0 0 0
+  field SFRotation rotation    0 0 1 0
+  field SFString   name        "basket"
+  field SFVec3f    size        0.6 0.6 0.3
+  field SFFloat    wall        0.02
+  field SFFloat    standHeight 0.2
+  field SFColor    color       0.45 0.50 0.55
+]
+{
+%<
+  const s = fields.size.value;
+  const w = fields.wall.value;
+  const sh = fields.standHeight.value;
+  const parts = [
+    // stand
+    { p: [0, 0, sh / 2],                    s: [s.x - 0.1, s.y - 0.1, sh] },
+    // floor plate
+    { p: [0, 0, sh + w / 2],                s: [s.x, s.y, w] },
+    // four walls
+    { p: [0,  (s.y - w) / 2, sh + w + s.z / 2], s: [s.x, w, s.z] },
+    { p: [0, -(s.y - w) / 2, sh + w + s.z / 2], s: [s.x, w, s.z] },
+    { p: [ (s.x - w) / 2, 0, sh + w + s.z / 2], s: [w, s.y - 2 * w, s.z] },
+    { p: [-(s.x - w) / 2, 0, sh + w + s.z / 2], s: [w, s.y - 2 * w, s.z] },
+  ];
+>%
+  Solid {
+    translation IS translation
+    rotation IS rotation
+    name IS name
+    children [
+%< for (const q of parts) { >%
+      Transform {
+        translation %<= q.p[0] >% %<= q.p[1] >% %<= q.p[2] >%
+        children [
+          Shape {
+            appearance PBRAppearance {
+              baseColor IS color
+              roughness 0.7
+              metalness 0.3
+            }
+            geometry Box {
+              size %<= q.s[0] >% %<= q.s[1] >% %<= q.s[2] >%
+            }
+          }
+        ]
+      }
+%< } >%
+    ]
+    boundingObject Group {
+      children [
+%< for (const q of parts) { >%
+        Transform {
+          translation %<= q.p[0] >% %<= q.p[1] >% %<= q.p[2] >%
+          children [
+            Box {
+              size %<= q.s[0] >% %<= q.s[1] >% %<= q.s[2] >%
+            }
+          ]
+        }
+%< } >%
+      ]
+    }
+  }
+}

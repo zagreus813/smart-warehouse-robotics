@@ -1,0 +1,67 @@
+#VRML_SIM R2025a utf8
+# template language: javascript
+# Order tote: an open-top box that sits on an output conveyor under the output arm.
+# The arm places the ordered blocks into it. Static solid (no physics): the world_manager
+# supervisor moves it (and the blocks inside) when the finished order is shipped.
+# Origin is at the center of the bottom face. size = (x, y, total height), wall = thickness.
+
+PROTO OrderTote [
+  field SFVec3f    translation 0 0 0
+  field SFRotation rotation    0 0 1 0
+  field SFString   name        "tote"
+  field SFVec3f    size        0.40 0.40 0.10
+  field SFFloat    wall        0.015
+  field SFColor    color       0.72 0.74 0.76
+]
+{
+%<
+  const s = fields.size.value;
+  const w = fields.wall.value;
+  const h = s.z - w;
+  const parts = [
+    { p: [0, 0, w / 2],                          s: [s.x, s.y, w] },
+    { p: [0,  (s.y - w) / 2, w + h / 2],         s: [s.x, w, h] },
+    { p: [0, -(s.y - w) / 2, w + h / 2],         s: [s.x, w, h] },
+    { p: [ (s.x - w) / 2, 0, w + h / 2],         s: [w, s.y - 2 * w, h] },
+    { p: [-(s.x - w) / 2, 0, w + h / 2],         s: [w, s.y - 2 * w, h] },
+  ];
+>%
+  Solid {
+    translation IS translation
+    rotation IS rotation
+    name IS name
+    children [
+%< for (const q of parts) { >%
+      Transform {
+        translation %<= q.p[0] >% %<= q.p[1] >% %<= q.p[2] >%
+        children [
+          Shape {
+            appearance PBRAppearance {
+              baseColor IS color
+              roughness 0.7
+              metalness 0.1
+            }
+            geometry Box {
+              size %<= q.s[0] >% %<= q.s[1] >% %<= q.s[2] >%
+            }
+          }
+        ]
+      }
+%< } >%
+    ]
+    boundingObject Group {
+      children [
+%< for (const q of parts) { >%
+        Transform {
+          translation %<= q.p[0] >% %<= q.p[1] >% %<= q.p[2] >%
+          children [
+            Box {
+              size %<= q.s[0] >% %<= q.s[1] >% %<= q.s[2] >%
+            }
+          ]
+        }
+%< } >%
+      ]
+    }
+  }
+}

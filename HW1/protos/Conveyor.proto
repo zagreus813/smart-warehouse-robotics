@@ -1,0 +1,128 @@
+#VRML_SIM R2025a utf8
+# template language: javascript
+# Powered conveyor belt built on the Webots Track node.
+#   Flow direction is the local +x axis. Origin is on the floor at the center of the belt.
+#   size = (length, width, top height). Belt top surface is at z = size.z.
+#   customData holds the belt speed in m/s as a string; the "conveyor_belt" controller
+#   applies it live, so a supervisor (or you, in the scene tree) can change it at runtime.
+#   endStop adds a plate at the flow end so blocks stop there instead of falling off.
+#   The belt texture is scrolled by the world_manager supervisor through the BELT_TEXTURE
+#   TextureTransform (so it stays in sync with the belt state), not by the Track node.
+
+PROTO Conveyor [
+  field SFVec3f    translation 0 0 0
+  field SFRotation rotation    0 0 1 0
+  field SFString   name        "conveyor"
+  field SFVec3f    size        4 0.3 0.35
+  field SFString   customData  "0.15"
+  field SFBool     endStop     TRUE
+  field SFString   controller  "conveyor_belt"
+]
+{
+%<
+  const L = fields.size.value.x;
+  const W = fields.size.value.y;
+  const H = fields.size.value.z;
+  const T = 0.05;         // belt slab thickness
+  const rail = 0.02;      // side rail thickness
+  const railUp = 0.03;    // side rail height above belt top (blocks are 0.05 tall)
+  const frameColor = '0.30 0.31 0.34';
+  const railColor = '0.62 0.64 0.67';
+  const driveColor = '0.20 0.22 0.25';
+  const parts = [];
+  // longitudinal frame beams under the belt
+  for (const sg of [-1, 1]) {
+    parts.push({ p: [0, sg * (W / 2 - 0.015), H - T - 0.04], s: [L - 0.02, 0.03, 0.08], c: frameColor });
+  }
+  // legs with a low cross brace and foot plates
+  const nLegs = Math.max(2, Math.round(L / 1.2) + 1);
+  for (let i = 0; i < nLegs; i++) {
+    const x = -L / 2 + 0.15 + i * (L - 0.3) / (nLegs - 1);
+    for (const sg of [-1, 1]) {
+      parts.push({ p: [x, sg * (W / 2 - 0.015), (H - T - 0.08) / 2], s: [0.04, 0.04, H - T - 0.08], c: frameColor });
+      parts.push({ p: [x, sg * (W / 2 - 0.015), 0.01], s: [0.08, 0.08, 0.02], c: driveColor });
+    }
+    parts.push({ p: [x, 0, 0.12], s: [0.03, W - 0.05, 0.03], c: frameColor });
+  }
+  // drive unit at the flow end, under the belt
+  parts.push({ p: [L / 2 - 0.2, 0, H - T - 0.11], s: [0.30, W - 0.06, 0.14], c: driveColor });
+  // side rails
+  parts.push({ p: [0,  (W + rail) / 2, H - T + (T + railUp) / 2], s: [L, rail, T + railUp], c: railColor });
+  parts.push({ p: [0, -(W + rail) / 2, H - T + (T + railUp) / 2], s: [L, rail, T + railUp], c: railColor });
+  if (fields.endStop.value) {
+    parts.push({ p: [L / 2 + 0.01, 0, H - T + (T + 0.06) / 2], s: [0.02, W + 2 * rail, T + 0.06], c: railColor });
+  }
+>%
+  Robot {
+    translation IS translation
+    rotation IS rotation
+    name IS name
+    controller IS controller
+    customData IS customData
+    children [
+      Track {
+        translation 0 0 %<= H - T / 2 >%
+        name "belt_track"
+        children [
+          Shape {
+            appearance PBRAppearance {
+              baseColorMap ImageTexture {
+                url [
+                  "textures/belt.png"
+                ]
+              }
+              textureTransform DEF BELT_TEXTURE TextureTransform {
+              }
+              roughness 0.9
+              metalness 0
+            }
+            geometry Box {
+              size %<= L >% %<= W >% %<= T >%
+            }
+          }
+        ]
+        boundingObject Box {
+          size %<= L >% %<= W >% %<= T >%
+        }
+        device [
+          LinearMotor {
+            name "belt_motor"
+            maxVelocity 1
+          }
+        ]
+        textureAnimation 0 0
+      }
+%< for (const q of parts) { >%
+      Transform {
+        translation %<= q.p[0] >% %<= q.p[1] >% %<= q.p[2] >%
+        children [
+          Shape {
+            appearance PBRAppearance {
+              baseColor %<= q.c >%
+              roughness 0.8
+              metalness 0.4
+            }
+            geometry Box {
+              size %<= q.s[0] >% %<= q.s[1] >% %<= q.s[2] >%
+            }
+          }
+        ]
+      }
+%< } >%
+    ]
+    boundingObject Group {
+      children [
+%< for (const q of parts) { >%
+        Transform {
+          translation %<= q.p[0] >% %<= q.p[1] >% %<= q.p[2] >%
+          children [
+            Box {
+              size %<= q.s[0] >% %<= q.s[1] >% %<= q.s[2] >%
+            }
+          ]
+        }
+%< } >%
+      ]
+    }
+  }
+}

@@ -1,0 +1,40 @@
+#VRML_SIM R2025a utf8
+# Colored cargo block (default 5 cm cube, 0.1 kg) that the robots must move.
+# recognitionColors lets a Camera with Recognition detect the block and read its color.
+
+PROTO ColoredBlock [
+  field SFVec3f    translation       0 0 0.38
+  field SFRotation rotation          0 0 1 0
+  field SFString   name              "block"
+  field SFColor    color             0.85 0.10 0.10
+  field SFVec3f    size              0.05 0.05 0.05
+  field SFFloat    mass              0.1
+  field MFColor    recognitionColors [0.85 0.10 0.10]
+]
+{
+  Solid {
+    translation IS translation
+    rotation IS rotation
+    name IS name
+    recognitionColors IS recognitionColors
+    children [
+      Shape {
+        appearance PBRAppearance {
+          baseColor IS color
+          roughness 0.6
+          metalness 0
+        }
+        geometry Box {
+          size IS size
+        }
+      }
+    ]
+    boundingObject Box {
+      size IS size
+    }
+    physics Physics {
+      density -1
+      mass IS mass
+    }
+  }
+}

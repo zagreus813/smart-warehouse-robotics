@@ -1,0 +1,7 @@
+{
+  "preset": "a1",
+  "_comment": "Preset for this assignment. Add keys here to override it (see docs/02_world_and_task.md). Press Reset in Webots after editing.",
+  "run": {
+    "duration_s": 360
+  }
+}
